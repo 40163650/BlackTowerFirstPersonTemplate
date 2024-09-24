@@ -5,6 +5,9 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
 #include "Logging/LogMacros.h"
+
+#include "Math/Vector.h"
+
 #include "FirstPersonCharacter.generated.h"
 
 class UInputComponent;
@@ -29,6 +32,10 @@ class AFirstPersonCharacter : public ACharacter
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
 	UCameraComponent* FirstPersonCameraComponent;
 
+	/* Teleport indicator */
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category=Mesh, meta = (AllowPrivateAccess = "true"))
+	UStaticMeshComponent* TeleportIndicatorComponent;
+
 	/** Jump Input Action */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Input, meta=(AllowPrivateAccess = "true"))
 	UInputAction* JumpAction;
@@ -36,12 +43,23 @@ class AFirstPersonCharacter : public ACharacter
 	/** Move Input Action */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Input, meta=(AllowPrivateAccess = "true"))
 	UInputAction* MoveAction;
+
+	UFUNCTION(BlueprintCallable, Category=Input)
+	void UBlinkStart();
+
+	UFUNCTION(BlueprintCallable, Category=Input)
+	void UBlinkComplete();
+
+	UFUNCTION(BlueprintCallable)
+	float GetBlinkCoolDownPercentage() { return blinkCoolDown / blinkCoolDownSeconds; }
 	
 public:
 	AFirstPersonCharacter();
 
 protected:
 	virtual void BeginPlay();
+
+	virtual void Tick(float DeltaSeconds) override;
 
 public:
 		
@@ -67,5 +85,12 @@ public:
 	/** Returns FirstPersonCameraComponent subobject **/
 	UCameraComponent* GetFirstPersonCameraComponent() const { return FirstPersonCameraComponent; }
 
+private:
+	const float blinkCoolDownSeconds = 2.0f;
+
+	bool bIsBlinking = false;
+	float blinkCoolDown = 0.0f;
+	FVector blinkDestination = FVector(0.0, 0.0, 0.0);
+	
 };
 
