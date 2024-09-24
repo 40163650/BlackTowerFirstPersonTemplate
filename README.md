@@ -6,4 +6,6 @@ Upon release of the B key, the screen will briefly fade to black and the player 
 
 At this point a cooldown timer starts, the player cannot blink again until the cooldown timer has finished. It lasts for 2 seconds. The player can see how long they have left to be able to teleport again by looking at the animated HUD element.
 
+A sound effect will play when the player teleports, and when the cool down finishes.
+
 The controls are WASD to move around, Left Shift to sprint, space to jump, and B to blink / teleport.
