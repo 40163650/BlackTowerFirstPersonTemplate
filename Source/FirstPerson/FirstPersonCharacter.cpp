@@ -25,10 +25,10 @@ DEFINE_LOG_CATEGORY(LogTemplateCharacter);
 // Cast a ray from the player camera to the teleport point
 // where it is aimed, set that as the teleport destination
 // Show the destination as a physical object
-// Bonus: collision
+// This is done in the tick, it is initiated when the key is pressed here
 void AFirstPersonCharacter::UBlinkStart()
 {
-	if (blinkCoolDown == 0)
+	if (BlinkCoolDown == 0)
 	{
 		bIsBlinking = true;
 		TeleportIndicatorComponent->SetVisibility(true);
@@ -48,9 +48,9 @@ void AFirstPersonCharacter::UBlinkComplete()
 		FLinearColor FadeColor(0.0f, 0.0f, 0.0f);
 		CameraManager->StartCameraFade(0.0f, 1.0f, 0.1f, FadeColor, false /*fadeAudio?*/, true /*holdWhenFinished?*/);
 		UGameplayStatics::PlaySound2D(this, WarpWave);
-		TeleportTo(blinkDestination, GetWorld()->GetFirstPlayerController()->GetControlRotation(), false /*isATest?*/, true /*noCheck?*/);
+		TeleportTo(BlinkDestination, GetWorld()->GetFirstPlayerController()->GetControlRotation(), false /*isATest?*/, true /*noCheck?*/);
 		CameraManager->StartCameraFade(1.0f, 0.0f, 0.1f, FadeColor, false /*fadeAudio?*/, true /*holdWhenFinished?*/);
-		blinkCoolDown = blinkCoolDownSeconds;
+		BlinkCoolDown = BlinkCoolDownSeconds;
 		bIsBlinking = false;
 		TeleportIndicatorComponent->SetVisibility(false);
 	}
@@ -73,9 +73,9 @@ AFirstPersonCharacter::AFirstPersonCharacter()
 	Mesh1P->SetupAttachment(FirstPersonCameraComponent);
 	Mesh1P->bCastDynamicShadow = false;
 	Mesh1P->CastShadow = false;
-	//Mesh1P->SetRelativeRotation(FRotator(0.9f, -19.19f, 5.2f));
 	Mesh1P->SetRelativeLocation(FVector(-30.f, 0.f, -150.f));
 
+	// Create a mesh showing where we will teleport to when we are teleporting
 	TeleportIndicatorComponent = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("TeleportIndicator"));
 	TeleportIndicatorComponent->SetVisibility(false);
 	static ConstructorHelpers::FObjectFinder<UStaticMesh>MeshAsset(TEXT("StaticMesh'/Game/StarterContent/Shapes/Shape_Sphere.Shape_Sphere'"));
@@ -83,6 +83,7 @@ AFirstPersonCharacter::AFirstPersonCharacter()
 	TeleportIndicatorComponent->SetWorldScale3D(FVector(0.1f, 0.1f, 0.1f));
 	TeleportIndicatorComponent->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 
+	// Create audio waves to play during teleportation and when we are ready to teleport again
 	static ConstructorHelpers::FObjectFinder<USoundWave> warpResource(TEXT("SoundWave'/Game/Audio/warp.warp'"));
 	WarpWave = warpResource.Object;
 
@@ -110,15 +111,16 @@ void AFirstPersonCharacter::Tick(float DeltaSeconds)
 		FVector EndLocation = CharacterLocation + 10000 * UKismetMathLibrary::GetForwardVector(GetWorld()->GetFirstPlayerController()->GetControlRotation());
 		if (UKismetSystemLibrary::LineTraceSingle(GetWorld(), CharacterLocation, EndLocation, ETraceTypeQuery::TraceTypeQuery1, false, TArray<class AActor*>(),	EDrawDebugTrace::None, HitResult, true))
 		{
-			blinkDestination = HitResult.Location;
-			TeleportIndicatorComponent->SetWorldLocation(blinkDestination);
+			BlinkDestination = HitResult.Location;
+			TeleportIndicatorComponent->SetWorldLocation(BlinkDestination);
 		}
 	}
 
-	if (blinkCoolDown > 0)
+	// Tick down the cooldown timer, play audio when it finishes
+	if (BlinkCoolDown > 0)
 	{
-		blinkCoolDown = FMath::Max(blinkCoolDown - DeltaSeconds, 0.0f);
-		if (blinkCoolDown == 0)
+		BlinkCoolDown = FMath::Max(BlinkCoolDown - DeltaSeconds, 0.0f);
+		if (BlinkCoolDown == 0)
 		{
 			UGameplayStatics::PlaySound2D(this, CooldownFinishedWave);
 		}

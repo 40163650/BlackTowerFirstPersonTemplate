@@ -44,20 +44,25 @@ class AFirstPersonCharacter : public ACharacter
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Input, meta=(AllowPrivateAccess = "true"))
 	UInputAction* MoveAction;
 
+	/* Audio wave to play while teleporting */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category=Audio, meta = (AllowPrivateAccess = "true"))
 	USoundWave* WarpWave;
 
+	/* Audio wave to play when we are ready to teleport again */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category=Audio, meta = (AllowPrivateAccess = "true"))
 	USoundWave* CooldownFinishedWave;
 
+	/* Called when the user presses the blink key down */
 	UFUNCTION(BlueprintCallable, Category=Input)
 	void UBlinkStart();
 
+	/* Called when the user releases the blink key */
 	UFUNCTION(BlueprintCallable, Category=Input)
 	void UBlinkComplete();
 
+	/* Returns a number between 0 and 1 representing how long until the cooldown ends, used in the HUD */
 	UFUNCTION(BlueprintCallable)
-	float GetBlinkCoolDownPercentage() { return blinkCoolDown / blinkCoolDownSeconds; }
+	float GetBlinkCoolDownPercentage() { return BlinkCoolDown / BlinkCoolDownSeconds; }
 	
 public:
 	AFirstPersonCharacter();
@@ -92,11 +97,11 @@ public:
 	UCameraComponent* GetFirstPersonCameraComponent() const { return FirstPersonCameraComponent; }
 
 private:
-	const float blinkCoolDownSeconds = 2.0f;
+	const float BlinkCoolDownSeconds = 2.0f;
 
 	bool bIsBlinking = false;
-	float blinkCoolDown = 0.0f;
-	FVector blinkDestination = FVector(0.0, 0.0, 0.0);
+	float BlinkCoolDown = 0.0f;
+	FVector BlinkDestination = FVector(0.0, 0.0, 0.0);
 	
 };
 
