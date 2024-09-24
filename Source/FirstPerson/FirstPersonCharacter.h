@@ -44,6 +44,12 @@ class AFirstPersonCharacter : public ACharacter
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Input, meta=(AllowPrivateAccess = "true"))
 	UInputAction* MoveAction;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category=Audio, meta = (AllowPrivateAccess = "true"))
+	USoundWave* WarpWave;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category=Audio, meta = (AllowPrivateAccess = "true"))
+	USoundWave* CooldownFinishedWave;
+
 	UFUNCTION(BlueprintCallable, Category=Input)
 	void UBlinkStart();
 

@@ -39,6 +39,7 @@ void AFirstPersonCharacter::UBlinkStart()
 // Teleport player,
 // Fade from black,
 // Start cooldown timer
+// Play warp audio
 void AFirstPersonCharacter::UBlinkComplete()
 {
 	if (bIsBlinking)
@@ -46,6 +47,7 @@ void AFirstPersonCharacter::UBlinkComplete()
 		APlayerCameraManager* CameraManager = UGameplayStatics::GetPlayerCameraManager(GetWorld(), 0);
 		FLinearColor FadeColor(0.0f, 0.0f, 0.0f);
 		CameraManager->StartCameraFade(0.0f, 1.0f, 0.1f, FadeColor, false /*fadeAudio?*/, true /*holdWhenFinished?*/);
+		UGameplayStatics::PlaySound2D(this, WarpWave);
 		TeleportTo(blinkDestination, GetWorld()->GetFirstPlayerController()->GetControlRotation(), false /*isATest?*/, true /*noCheck?*/);
 		CameraManager->StartCameraFade(1.0f, 0.0f, 0.1f, FadeColor, false /*fadeAudio?*/, true /*holdWhenFinished?*/);
 		blinkCoolDown = blinkCoolDownSeconds;
@@ -81,6 +83,11 @@ AFirstPersonCharacter::AFirstPersonCharacter()
 	TeleportIndicatorComponent->SetWorldScale3D(FVector(0.1f, 0.1f, 0.1f));
 	TeleportIndicatorComponent->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 
+	static ConstructorHelpers::FObjectFinder<USoundWave> warpResource(TEXT("SoundWave'/Game/Audio/warp.warp'"));
+	WarpWave = warpResource.Object;
+
+	static ConstructorHelpers::FObjectFinder<USoundWave> cooldownResource(TEXT("SoundWave'/Game/Audio/cooldownfinished.cooldownfinished'"));
+	CooldownFinishedWave = cooldownResource.Object;
 }
 
 void AFirstPersonCharacter::BeginPlay()
@@ -111,7 +118,10 @@ void AFirstPersonCharacter::Tick(float DeltaSeconds)
 	if (blinkCoolDown > 0)
 	{
 		blinkCoolDown = FMath::Max(blinkCoolDown - DeltaSeconds, 0.0f);
-		// TODO: Update UI to show coolDown level
+		if (blinkCoolDown == 0)
+		{
+			UGameplayStatics::PlaySound2D(this, CooldownFinishedWave);
+		}
 	}
 }
 
